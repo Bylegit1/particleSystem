@@ -15,7 +15,7 @@ namespace particleSystem
         public int displayWidth { get; set; } 
         public int displayHeight { get; set; }
 
-        Color[] colors = new Color[]
+        protected Color[] colors = new Color[]
         {
         Color.Red,
         Color.Orange,
