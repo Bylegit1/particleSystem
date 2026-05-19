@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColorChange.cs" />
+    <Compile Include="CounterPoint.cs" />
     <Compile Include="Emitter.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

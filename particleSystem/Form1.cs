@@ -34,6 +34,9 @@ namespace particleSystem
 
         private float offsetX, offsetY;
 
+        private List<CounterPoint> counterPoints = new List<CounterPoint>();
+        private CounterPoint selectedCounter = null;
+
         public Form1()
         {
             InitializeComponent();
@@ -134,51 +137,64 @@ namespace particleSystem
             picDisplay.MouseDown += PicDisplay_MouseDown;
             picDisplay.MouseMove += PicDisplay_MouseMove;
             picDisplay.MouseUp += PicDisplay_MouseUp;
+            picDisplay.MouseClick += PicDisplay_MouseClick;
         }
 
 
         private void PicDisplay_MouseDown(object sender, MouseEventArgs e)
         {
+            selectedCounter = null;
+            foreach (var counter in counterPoints)
+            {
+                if (IsPointClicked(counter, e.X, e.Y, counter.Radius))
+                {
+                    selectedCounter = counter;
+                    offsetX = counter.X - e.X;
+                    offsetY = counter.Y - e.Y;
+                    return;
+                }
+            }
+
             isMovingRed = isMovingOrange = isMovingYellow = isMovingGreen =
             isMovingCyan = isMovingBlue = isMovingMagenta = false;
 
-            if (IsPointClicked(redPoint, e.X, e.Y))
+            if (IsPointClicked(redPoint, e.X, e.Y,40))
             {
                 isMovingRed = true;
                 offsetX = redPoint.X - e.X;
                 offsetY = redPoint.Y - e.Y;
             }
-            else if (IsPointClicked(orangePoint, e.X, e.Y))
+            else if (IsPointClicked(orangePoint, e.X, e.Y,40))
             {
                 isMovingOrange = true;
                 offsetX = orangePoint.X - e.X;
                 offsetY = orangePoint.Y - e.Y;
             }
-            else if (IsPointClicked(yellowPoint, e.X, e.Y))
+            else if (IsPointClicked(yellowPoint, e.X, e.Y,40))
             {
                 isMovingYellow = true;
                 offsetX = yellowPoint.X - e.X;
                 offsetY = yellowPoint.Y - e.Y;
             }
-            else if (IsPointClicked(greenPoint, e.X, e.Y))
+            else if (IsPointClicked(greenPoint, e.X, e.Y,40))
             {
                 isMovingGreen = true;
                 offsetX = greenPoint.X - e.X;
                 offsetY = greenPoint.Y - e.Y;
             }
-            else if (IsPointClicked(cyanPoint, e.X, e.Y))
+            else if (IsPointClicked(cyanPoint, e.X, e.Y,40))
             {
                 isMovingCyan = true;
                 offsetX = cyanPoint.X - e.X;
                 offsetY = cyanPoint.Y - e.Y;
             }
-            else if (IsPointClicked(bluePoint, e.X, e.Y))
+            else if (IsPointClicked(bluePoint, e.X, e.Y,40))
             {
                 isMovingBlue = true;
                 offsetX = bluePoint.X - e.X;
                 offsetY = bluePoint.Y - e.Y;
             }
-            else if (IsPointClicked(magentaPoint, e.X, e.Y))
+            else if (IsPointClicked(magentaPoint, e.X, e.Y,40))
             {
                 isMovingMagenta = true;
                 offsetX = magentaPoint.X - e.X;
@@ -186,7 +202,7 @@ namespace particleSystem
             }
         }
 
-        private bool IsPointClicked(ColorChangerPoint point, int clickX, int clickY)
+        private bool IsPointClicked(ImpactPoint point, int clickX, int clickY, int radius)
         {
             if (point == null) return false;
 
@@ -194,7 +210,7 @@ namespace particleSystem
             float dy = point.Y - clickY;
             float distance = (float)Math.Sqrt(dx * dx + dy * dy);
 
-            return distance < 40; 
+            return distance < radius; 
         }
 
         private void PicDisplay_MouseMove(object sender, MouseEventArgs e)
@@ -244,9 +260,64 @@ namespace particleSystem
 
         private void PicDisplay_MouseUp(object sender, MouseEventArgs e)
         {
+            selectedCounter = null;
             isMovingRed = isMovingOrange = isMovingYellow = isMovingGreen =
             isMovingCyan = isMovingBlue = isMovingMagenta = false;
         }
+
+        private void PicDisplay_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                CounterPoint counterToDelete = null;
+                foreach (var counter in counterPoints)
+                {
+                    if (IsPointClicked(counter, e.X, e.Y, counter.Radius))
+                    {
+                        counterToDelete = counter;
+                        break;
+                    }
+                }
+
+                if (counterToDelete != null)
+                {
+                    DeleteCounterPoint(counterToDelete);
+                }
+                else
+                {
+                    CreateCounterPoint(e.X, e.Y);
+                }
+            }
+        }
+
+        private void DeleteCounterPoint(CounterPoint counter)
+        {
+            counterPoints.Remove(counter);
+
+            emitter.impactPoints.Remove(counter);
+
+            if (selectedCounter == counter)
+            {
+                selectedCounter = null;
+            }
+        }
+
+        private void CreateCounterPoint(int x, int y)
+        {
+            var counter = new CounterPoint
+            {
+                X = x,
+                Y = y,
+                Radius = 40,
+                CountParticles = 0,
+                displayWidth = picDisplay.Width,
+                displayHeight = picDisplay.Height
+            };
+
+            counterPoints.Add(counter);
+            emitter.impactPoints.Add(counter);
+        }
+
         private void timer1_Tick(object sender, EventArgs e)
         {
             emitter.UpdateState();
