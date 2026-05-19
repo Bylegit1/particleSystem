@@ -104,5 +104,10 @@ namespace particleSystem
 
             particle.Radius = 2 + Particle.rand.Next(10);
         }
+
+        public List<Particle> GetParticles()
+        {
+            return particles;
+        }
     }
 }

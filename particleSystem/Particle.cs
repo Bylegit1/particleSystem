@@ -20,6 +20,8 @@ namespace particleSystem
 
         public static Random rand = new Random();
 
+        public bool IsParticleInRadar = false;  
+
         public Particle()
         {
             var direction = (double)rand.Next(360);

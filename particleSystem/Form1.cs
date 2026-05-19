@@ -37,6 +37,10 @@ namespace particleSystem
         private List<CounterPoint> counterPoints = new List<CounterPoint>();
         private CounterPoint selectedCounter = null;
 
+        private bool MovingRadar = false;
+        private RadarPoint radar = null;
+
+
         public Form1()
         {
             InitializeComponent();
@@ -138,8 +142,17 @@ namespace particleSystem
             picDisplay.MouseMove += PicDisplay_MouseMove;
             picDisplay.MouseUp += PicDisplay_MouseUp;
             picDisplay.MouseClick += PicDisplay_MouseClick;
+            picDisplay.MouseWheel += PicDisplay_MouseWheel;
         }
 
+        private void PicDisplay_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (radar != null)
+            {
+                int delta = e.Delta > 0 ? 10 : -10;
+                radar.ChangeSize(delta);
+            }
+        }
 
         private void PicDisplay_MouseDown(object sender, MouseEventArgs e)
         {
@@ -199,6 +212,28 @@ namespace particleSystem
                 isMovingMagenta = true;
                 offsetX = magentaPoint.X - e.X;
                 offsetY = magentaPoint.Y - e.Y;
+            }
+        }
+
+        private void CreateRadar(int x, int y)
+        {
+            radar = new RadarPoint
+            {
+                X = x,
+                Y = y,
+                sizeRadar = 100,
+                displayWidth = picDisplay.Width,
+                displayHeight = picDisplay.Height
+            };
+            emitter.impactPoints.Add(radar);
+        }
+
+        private void DeleteRadar()
+        {
+            if (radar != null)
+            {
+                emitter.impactPoints.Remove(radar);
+                radar = null;
             }
         }
 
@@ -265,8 +300,32 @@ namespace particleSystem
             isMovingCyan = isMovingBlue = isMovingMagenta = false;
         }
 
+        private bool IsRadarClicked(int clickX, int clickY)
+        {
+            if (radar == null) return false;
+
+            float dx = radar.X - clickX;
+            float dy = radar.Y - clickY;
+            float distance = (float)Math.Sqrt(dx * dx + dy * dy);
+
+            return distance < radar.sizeRadar / 2;
+        }
+
         private void PicDisplay_MouseClick(object sender, MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Left)
+            {
+                if (radar != null && IsRadarClicked(e.X, e.Y))
+                {
+                    DeleteRadar();
+                }
+                else if (radar == null)
+                {
+                    CreateRadar(e.X, e.Y);
+                }
+                return;
+            }
+
             if (e.Button == MouseButtons.Right)
             {
                 CounterPoint counterToDelete = null;
@@ -321,6 +380,10 @@ namespace particleSystem
         private void timer1_Tick(object sender, EventArgs e)
         {
             emitter.UpdateState();
+            if (radar != null)
+            {
+                radar.UpdateCount(emitter.GetParticles());
+            }
             using (var g = Graphics.FromImage(picDisplay.Image))
             {
                 g.Clear(Color.Black);
