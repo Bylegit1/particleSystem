@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace particleSystem
 {
-    public class AntiGravityPoint : IImpactPoint
+    public class AntiGravityPoint : ImpactPoint
     {
         public int Power = 100; 
 
