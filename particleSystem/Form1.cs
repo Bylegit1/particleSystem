@@ -380,10 +380,6 @@ namespace particleSystem
         private void timer1_Tick(object sender, EventArgs e)
         {
             emitter.UpdateState();
-            if (radar != null)
-            {
-                radar.UpdateCount(emitter.GetParticles());
-            }
             using (var g = Graphics.FromImage(picDisplay.Image))
             {
                 g.Clear(Color.Black);

@@ -6,9 +6,10 @@ namespace particleSystem
 {
     public class RadarPoint : ImpactPoint
     {
-        public int sizeRadar = 100;           
-        public int insideCount = 0;      
-        public Color radarColor = Color.LimeGreen;  
+        public int sizeRadar = 100;
+        public Color radarColor = Color.Lime;
+
+        private List<Particle> insideParticles = new List<Particle>();
 
         public override void ImpactParticle(Particle particle)
         {
@@ -16,45 +17,61 @@ namespace particleSystem
             float dy = Y - particle.Y;
             float distance = (float)Math.Sqrt(dx * dx + dy * dy);
 
-            bool isInside = distance < sizeRadar / 2;
+            bool isInside = distance + particle.Radius < sizeRadar / 2;
 
             if (isInside)
             {
-                particle.IsParticleInRadar = true;
-
-                if (particle is Particle.ParticleColorful colorful)
+                if (!insideParticles.Contains(particle))
                 {
-                    colorful.FromColor = radarColor;
-                    colorful.ToColor = radarColor;
+                    insideParticles.Add(particle);
                 }
             }
             else
             {
-                if (particle.IsParticleInRadar)
+                if (insideParticles.Contains(particle))
                 {
-                    particle.IsParticleInRadar = false;
-
-                    if (particle is Particle.ParticleColorful colorful)
-                    {
-                        colorful.FromColor = Color.White;
-                        colorful.ToColor = Color.FromArgb(0, Color.Black);
-                    }
+                    insideParticles.Remove(particle);
                 }
             }
         }
 
-        public void UpdateCount(List<Particle> particles)
+        public override void Render(Graphics g)
         {
-            insideCount = 0;
-            foreach (var particle in particles)
+            foreach (var particle in insideParticles)
             {
-                float dx = X - particle.X;
-                float dy = Y - particle.Y;
-                float distance = (float)Math.Sqrt(dx * dx + dy * dy);
+                float k = Math.Min(1f, particle.Life / 100);
+                Color color = Particle.ParticleColorful.MixColor(radarColor, radarColor, k);
 
-                if (distance < sizeRadar / 2)
+                using (var brush = new SolidBrush(color))
                 {
-                    insideCount++;
+                    g.FillEllipse(brush,
+                        particle.X - particle.Radius,
+                        particle.Y - particle.Radius,
+                        particle.Radius * 2,
+                        particle.Radius * 2);
+                }
+            }
+
+            int radius = sizeRadar / 2;
+            using (var pen = new Pen(radarColor, 3))
+            {
+                g.DrawEllipse(pen, X - radius, Y - radius, sizeRadar, sizeRadar);
+            }
+
+            string counterText = insideParticles.Count.ToString();
+            using (var font = new Font("Verdana", 10))
+            {
+                var stringFormat = new StringFormat
+                {
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = StringAlignment.Center
+                };
+
+                var size = g.MeasureString(counterText, font);
+
+                using (var textBrush = new SolidBrush(Color.Lime))
+                {
+                    g.DrawString(counterText, font, textBrush, X, Y, stringFormat);
                 }
             }
         }
@@ -65,28 +82,6 @@ namespace particleSystem
             if (newSize >= 50 && newSize <= 300)
             {
                 sizeRadar = newSize;
-            }
-        }
-
-        public override void Render(Graphics g)
-        {
-            int radius = sizeRadar / 2;
-
-            using (var pen = new Pen(radarColor, 3))
-            {
-                g.DrawEllipse(pen, X - radius, Y - radius, sizeRadar, sizeRadar);
-            }
-
-            string counterText = insideCount.ToString();
-            using (var brush = new SolidBrush(Color.White))
-            {
-                var font = new Font("Verdana", 14, FontStyle.Bold);
-                var format = new StringFormat
-                {
-                    Alignment = StringAlignment.Center,
-                    LineAlignment = StringAlignment.Center
-                };
-                g.DrawString(counterText, font, brush, X, Y, format);
             }
         }
     }
