@@ -16,7 +16,7 @@ namespace particleSystem
         public int MousePositionY;
         public float GravitationX = 0;
         public float GravitationY = 0;
-        public int ParticlesCount = 1000;
+        public int ParticlesCount;
 
         public int X; // координата X центра эмиттера, будем ее использовать вместо MousePositionX
         public int Y; // соответствующая координата Y 
@@ -29,19 +29,29 @@ namespace particleSystem
         public int LifeMin = 20; // минимальное время жизни частицы
         public int LifeMax = 100; // максимальное время жизни частицы
 
-        public int ParticlesPerTick = 1;
+        public int CountParticlesTickCreate = 40; // такое значение потому timer интервала 40мс, следовательно 1000мс(1 секунда) / 40 = 25 тиков в секунду(довольно плавно)
 
         public Color ColorFrom = Color.White; // начальный цвет частицы
         public Color ColorTo = Color.FromArgb(0, Color.Black); // конечный цвет частиц
 
+        public virtual Particle CreateParticle()
+        {
+            var particle = new ParticleColorful();
+            particle.FromColor = ColorFrom;
+            particle.ToColor = ColorTo;
+            return particle;
+        }
+
         public void UpdateState()
         {
-            foreach (var particle in particles)
+            for (int i = particles.Count - 1; i >= 0; i--)
             {
+                var particle = particles[i];
                 particle.Life -= 1;
+
                 if (particle.Life < 0)
                 {
-                    ResetParticle(particle);
+                    particles.RemoveAt(i);
                 }
                 else
                 {
@@ -58,16 +68,20 @@ namespace particleSystem
                 }
             }
 
-            for (var i = 0; i < 10; ++i)
+            foreach (var point in impactPoints)
+            {
+                if (point is RadarPoint radar)
+                {
+                    radar.RemoveDeadParticles();
+                }
+            }
+
+            for (var i = 0; i < CountParticlesTickCreate; ++i)
             {
                 if (particles.Count < ParticlesCount)
                 {
-                    var particle = new ParticleColorful();
-                    particle.FromColor = Color.White;
-                    particle.ToColor = Color.FromArgb(0, Color.Black);
-
-                    ResetParticle(particle); 
-
+                    var particle = CreateParticle();
+                    ResetParticle(particle);
                     particles.Add(particle);
                 }
                 else

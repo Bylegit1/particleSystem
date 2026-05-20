@@ -35,6 +35,17 @@ namespace particleSystem
             }
         }
 
+        public void RemoveDeadParticles()
+        {
+            for (int i = insideParticles.Count - 1; i >= 0; i--)
+            {
+                if (insideParticles[i].Life < 0)
+                {
+                    insideParticles.RemoveAt(i);
+                }
+            }
+        }
+
         public override void Render(Graphics g)
         {
             foreach (var particle in insideParticles)

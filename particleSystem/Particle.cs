@@ -74,7 +74,5 @@ namespace particleSystem
                 b.Dispose();
             }
         }
-
-
     }
 }

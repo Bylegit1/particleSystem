@@ -37,9 +37,7 @@ namespace particleSystem
         private List<CounterPoint> counterPoints = new List<CounterPoint>();
         private CounterPoint selectedCounter = null;
 
-        private bool MovingRadar = false;
         private RadarPoint radar = null;
-
 
         public Form1()
         {
@@ -375,6 +373,12 @@ namespace particleSystem
 
             counterPoints.Add(counter);
             emitter.impactPoints.Add(counter);
+        }
+
+        private void tbControlCountParticle_Scroll(object sender, EventArgs e)
+        {
+            emitter.ParticlesCount = tbControlCountParticle.Value;
+            lblParticleCount.Text = $"{tbControlCountParticle.Value}";
         }
 
         private void timer1_Tick(object sender, EventArgs e)
